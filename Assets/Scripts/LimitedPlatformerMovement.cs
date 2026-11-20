@@ -26,6 +26,9 @@ public class LimitedPlatformerMovement : MonoBehaviour
     private bool jumpInput;
     
     private Rigidbody2D rb;
+    public Collider2D slipperyPlatform;
+    public float iceAcceleration = 5f;
+    public float iceDeceleration = 2f;
     private CapsuleCollider2D groundCheckCollider; 
 
     
@@ -38,7 +41,25 @@ public class LimitedPlatformerMovement : MonoBehaviour
     void Update()
     {
         // Apply horizontal velocity from input
-        rb.linearVelocityX = moveInput.x * maxSpeed;
+       
+        if (slipperyPlatform != null &&
+            groundCheckCollider.IsTouching(slipperyPlatform))
+        {
+            float rate = Mathf.Abs(moveInput.x) > 0.01f
+                ? iceAcceleration
+                : iceDeceleration;
+
+            rb.linearVelocityX = Mathf.MoveTowards(
+                rb.linearVelocityX,
+                moveInput.x * maxSpeed,
+                rate * Time.deltaTime
+            );
+        }
+        else
+        {
+            rb.linearVelocityX = moveInput.x * maxSpeed;
+        }
+
         
         // Apply vertical velocity from jump
         if (jumpInput && IsGrounded())
